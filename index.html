@@ -847,7 +847,7 @@ textarea:focus, input[type="text"]:focus {
       <label class="field-label">Paste suspicious message</label>
       <textarea id="msgInput" placeholder="E.g: Congratulations! You have been selected to receive ₹2,00,000. Click here to claim within 24 hours..."></textarea>
       <div class="input-meta">
-        <span style="font-size:0.72rem;color:var(--c-dim);font-family:var(--f-mono)">Supports English & Tamil keywords</span>
+        <span style="font-size:0.72rem;color:var(--c-dim);font-family:var(--f-mono)">Analyzes messages for scam patterns</span>
         <span class="char-badge"><span id="msgLen">0</span> chars</span>
       </div>
       <button class="btn-analyze" onclick="runMessage()">
@@ -1056,11 +1056,11 @@ function toggleCheck(el) {
    KEYWORD DATABASE
 ════════════════════════════════════════════ */
 const KB = {
-  prize:    { w: 30, terms: ['won','winner','congratulations','prize','lottery','lucky draw','claim now','selected','reward','cash prize','gift card','jackpot','வாழ்த்துகள்','பரிசு','லாட்டரி','வென்றீர்கள்'] },
-  urgency:  { w: 25, terms: ['urgent','immediately','act now','limited time','expires today','within 24 hours','do not delay','last chance','hurry','asap','உடனே','இப்போதே'] },
-  finance:  { w: 35, terms: ['send money','transfer','bank account','upi','paytm','google pay','phonepe','deposit','fee','processing fee','registration fee','advance payment','bitcoin','crypto','double your money','₹','lakh','crore','பணம்','கட்டணம்'] },
-  pii:      { w: 30, terms: ['aadhar','aadhaar','pan card','passport','bank details','account number','ifsc','cvv','otp','pin','password','credit card','debit card','ஆதார்','கடவுச்சொல்'] },
-  threat:   { w: 35, terms: ['account suspended','account blocked','legal action','arrested','fir','court','penalty','suspended','blocked','verify now or lose','deactivated','கைது'] },
+  prize:    { w: 30, terms: ['won','winner','congratulations','prize','lottery','lucky draw','claim now','selected','reward','cash prize','gift card','jackpot'] },
+  urgency:  { w: 25, terms: ['urgent','immediately','act now','limited time','expires today','within 24 hours','do not delay','last chance','hurry','asap'] },
+  finance:  { w: 35, terms: ['send money','transfer','bank account','upi','paytm','google pay','phonepe','deposit','fee','processing fee','registration fee','advance payment','bitcoin','crypto','double your money','₹','lakh','crore'] },
+  pii:      { w: 30, terms: ['aadhar','aadhaar','pan card','passport','bank details','account number','ifsc','cvv','otp','pin','password','credit card','debit card'] },
+  threat:   { w: 35, terms: ['account suspended','account blocked','legal action','arrested','fir','court','penalty','suspended','blocked','verify now or lose','deactivated'] },
   job:      { w: 25, terms: ['work from home','earn per day','earn daily','part time job','no experience needed','make money online','easy money','passive income','earn ₹','recruitment'] },
   romance:  { w: 20, terms: ['i love you','you are beautiful','my darling','soulmate','marry me','i miss you','i need your help','army','stuck in airport','emergency'] },
   phishing: { w: 40, terms: ['click here','verify your account','update kyc','login here','confirm your identity','account will be','click the link below','tap here','open this link'] },
@@ -1201,19 +1201,19 @@ function showResult(score, flags, type) {
   /* detail message */
   const details = {
     message: {
-      danger:  'இந்த message-ல் multiple high-risk scam patterns உள்ளன. எந்த link-ம் click செய்யாதீர்கள், personal information அல்லது money share செய்யாதீர்கள்.',
-      warning: 'இந்த message சில suspicious patterns காட்டுகிறது. Sender-ஐ official channel வழியாக verify செய்யாமல் எதுவும் செய்யாதீர்கள்.',
-      safe:    'இந்த message-ல் clear scam indicators இல்லை. ஆனாலும் unsolicited messages-ல் எப்போதும் caution எடுங்கள்.',
+      danger:  'This message contains multiple high-risk scam patterns. Do not click any links or share personal information or money.',
+      warning: 'This message shows some suspicious patterns. Verify the sender through official channels before taking any action.',
+      safe:    'No clear scam indicators found in this message. However, always exercise caution with unsolicited messages.',
     },
     url: {
-      danger:  'இந்த URL multiple red flags காட்டுகிறது. இதை திறக்காதீர்கள் — credentials அல்லது payment information enter செய்யாதீர்கள்.',
-      warning: 'இந்த URL சில suspicious patterns உள்ளன. Official site-ஐ manually type செய்து visit செய்யுங்கள்.',
-      safe:    'இந்த URL relatively safe-ஆக தெரிகிறது. ஆனாலும் login credentials share செய்யும்போது எச்சரிக்கையாக இருங்கள்.',
+      danger:  'This URL shows multiple red flags. Do not open it — never enter credentials or payment information.',
+      warning: 'This URL has some suspicious patterns. Visit the official site by typing the address manually.',
+      safe:    'This URL appears relatively safe. Still, be careful when entering login credentials.',
     },
     profile: {
-      danger:  'இந்த profile multiple high-risk behavioral indicators காட்டுகிறது. உடனே block செய்யுங்கள் — எந்த personal அல்லது financial information-உம் share செய்யாதீர்கள்.',
-      warning: 'இந்த profile சில suspicious behaviors காட்டுகிறது. Trust செய்வதற்கு முன் thoroughly verify செய்யுங்கள்.',
-      safe:    'Major red flags இல்லை. Online strangers-ஐ trust செய்யும்போது எப்போதும் healthy skepticism வைத்திருங்கள்.',
+      danger:  'This profile shows multiple high-risk behavioral indicators. Block immediately — do not share any personal or financial information.',
+      warning: 'This profile shows some suspicious behaviors. Verify thoroughly before trusting.',
+      safe:    'No major red flags detected. Always maintain healthy skepticism when trusting online strangers.',
     },
   };
   $('rDetail').textContent = details[type][lvl];
@@ -1230,15 +1230,15 @@ function showResult(score, flags, type) {
 
   /* tips */
   const allTips = [
-    'OTP, PIN, password யாரிடமும் share செய்யாதீர்கள் — including bank staff.',
-    'Suspicious content-ஐ platform-ல் Report & Block செய்யுங்கள்.',
-    'Cybercrime report: cybercrime.gov.in அல்லது helpline 1930.',
-    '"Too good to be true" offers எல்லாம் scam என்று நினைத்து கொள்ளுங்கள்.',
+    'Never share your OTP, PIN, or password with anyone — including bank staff.',
+    'Report and block suspicious content on the platform immediately.',
+    'Report cybercrime at cybercrime.gov.in or call helpline 1930.',
+    'If an offer sounds too good to be true, it almost certainly is a scam.',
   ];
   const dangerTips = [
-    'உடனே இந்த message/link/profile-ஐ delete அல்லது block செய்யுங்கள்.',
-    'Bank details share செய்திருந்தால் உடனே bank-ஐ contact செய்யுங்கள்.',
-    'Family / friends-க்கு warn செய்யுங்கள்.',
+    'Immediately delete or block this message, link, or profile.',
+    'If you shared bank details, contact your bank immediately to secure your account.',
+    'Warn your family and friends about this scam.',
   ];
   const tips = score >= 70 ? [...dangerTips, ...allTips] : allTips;
   $('rTipsList').innerHTML = tips.map(t => `<li>${t}</li>`).join('');
