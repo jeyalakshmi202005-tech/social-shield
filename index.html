@@ -783,6 +783,140 @@ textarea:focus, input[type="text"]:focus {
 .footer-link:hover { color: var(--c-cyan); border-color: rgba(0,200,232,0.3); }
 
 /* ─────────────────────────────────────────────
+   HISTORY SECTION
+───────────────────────────────────────────── */
+.history-section { margin-top: 64px; }
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.history-header h2 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
+
+.history-actions { display: flex; gap: 8px; }
+
+.btn-sm {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-family: var(--f-display);
+  font-size: 0.775rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--c-border);
+  background: transparent;
+  color: var(--c-sub);
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-sm:hover { color: var(--c-text); border-color: var(--c-border2); }
+.btn-sm.danger:hover { color: var(--c-red); border-color: rgba(240,62,90,0.4); }
+
+.history-empty {
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--c-card);
+  border: 1px dashed var(--c-border);
+  border-radius: 14px;
+  color: var(--c-dim);
+  font-family: var(--f-mono);
+  font-size: 0.8rem;
+  line-height: 2;
+}
+.history-empty .empty-icon { font-size: 2rem; display: block; margin-bottom: 8px; opacity: 0.4; }
+
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--c-card);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  transition: all 0.15s;
+  animation: fadeUp 0.3s ease;
+}
+.history-item:hover { border-color: var(--c-border2); }
+.history-item.h-danger { border-left: 3px solid var(--c-red); }
+.history-item.h-warning { border-left: 3px solid var(--c-amber); }
+.history-item.h-safe { border-left: 3px solid var(--c-green); }
+
+.h-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+.h-body { flex: 1; min-width: 0; }
+
+.h-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.h-type {
+  font-family: var(--f-mono);
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: rgba(255,255,255,0.06);
+  color: var(--c-sub);
+}
+
+.h-verdict {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.h-danger .h-verdict  { color: var(--c-red); }
+.h-warning .h-verdict { color: var(--c-amber); }
+.h-safe .h-verdict    { color: var(--c-green); }
+
+.h-score {
+  font-family: var(--f-mono);
+  font-size: 0.7rem;
+  color: var(--c-dim);
+  margin-left: auto;
+}
+
+.h-preview {
+  font-size: 0.775rem;
+  color: var(--c-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.h-time {
+  font-family: var(--f-mono);
+  font-size: 0.65rem;
+  color: var(--c-dim);
+  flex-shrink: 0;
+}
+
+.h-del {
+  background: transparent;
+  border: none;
+  color: var(--c-dim);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 5px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.h-del:hover { color: var(--c-red); background: rgba(240,62,90,0.1); }
+
+/* ─────────────────────────────────────────────
    RESPONSIVE
 ───────────────────────────────────────────── */
 @media (max-width: 640px) {
@@ -792,6 +926,7 @@ textarea:focus, input[type="text"]:focus {
   .verdict-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
   .result-body { padding: 18px; }
   .analyzer-card { padding: 20px; }
+  .h-time { display: none; }
 }
 </style>
 </head>
@@ -994,6 +1129,25 @@ textarea:focus, input[type="text"]:focus {
     </div>
   </section>
 
+  <!-- ── HISTORY ── -->
+  <section class="history-section" id="historySection">
+    <div class="history-header">
+      <h2>📋 Analysis History</h2>
+      <div class="history-actions">
+        <button class="btn-sm" onclick="exportHistory()">⬇ Export JSON</button>
+        <button class="btn-sm danger" onclick="clearHistory()">🗑 Clear All</button>
+      </div>
+    </div>
+    <div id="historyContainer">
+      <div class="history-empty" id="historyEmpty">
+        <span class="empty-icon">🕵️</span>
+        No analyses saved yet.<br/>
+        Run your first scan above — results are saved automatically.
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </section>
+
   <!-- ── FOOTER ── -->
   <footer class="footer">
     <div class="footer-left">
@@ -1017,6 +1171,105 @@ textarea:focus, input[type="text"]:focus {
 /* ── Stats ── */
 const S = { total: 0, scam: 0, safe: 0 };
 const $ = id => document.getElementById(id);
+
+/* ── History Storage Key ── */
+const HISTORY_KEY = 'scamshield_history';
+
+/* ════════════════════════════════════════════
+   HISTORY FUNCTIONS
+════════════════════════════════════════════ */
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveHistory(arr) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+}
+
+function addToHistory(entry) {
+  const arr = loadHistory();
+  arr.unshift(entry); // newest first
+  if (arr.length > 50) arr.pop(); // keep max 50
+  saveHistory(arr);
+  renderHistory();
+}
+
+function deleteHistoryItem(id) {
+  const arr = loadHistory().filter(e => e.id !== id);
+  saveHistory(arr);
+  renderHistory();
+}
+
+function clearHistory() {
+  if (!confirm('Clear all history? This cannot be undone.')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+  // reset session stats
+  S.total = 0; S.scam = 0; S.safe = 0;
+  $('cTotal').textContent = '0';
+  $('cScam').textContent  = '0';
+  $('cSafe').textContent  = '0';
+}
+
+function exportHistory() {
+  const arr = loadHistory();
+  if (!arr.length) { alert('No history to export.'); return; }
+  const blob = new Blob([JSON.stringify(arr, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'scamshield_history_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function renderHistory() {
+  const arr = loadHistory();
+  const empty = $('historyEmpty');
+  const list  = $('historyList');
+
+  if (!arr.length) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  list.innerHTML = arr.map(e => {
+    const lvl   = e.score >= 70 ? 'danger' : e.score >= 35 ? 'warning' : 'safe';
+    const icon  = e.score >= 70 ? '🚨' : e.score >= 35 ? '⚠️' : '✅';
+    const verd  = e.score >= 70 ? 'High Threat' : e.score >= 35 ? 'Suspicious' : 'Safe';
+    const typeLabel = { message:'Message', url:'URL', profile:'Profile' }[e.type] || e.type;
+    const date  = new Date(e.ts).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    const preview = (e.input || '').slice(0, 80) + ((e.input||'').length > 80 ? '…' : '');
+
+    return `<div class="history-item h-${lvl}">
+      <div class="h-icon">${icon}</div>
+      <div class="h-body">
+        <div class="h-top">
+          <span class="h-type">${typeLabel}</span>
+          <span class="h-verdict">${verd}</span>
+          <span class="h-score">Score: ${e.score}/100</span>
+        </div>
+        <div class="h-preview">${preview || '<em style="opacity:0.4">No input text</em>'}</div>
+      </div>
+      <div class="h-time">${date}</div>
+      <button class="h-del" onclick="deleteHistoryItem('${e.id}')" title="Delete">✕</button>
+    </div>`;
+  }).join('');
+}
+
+/* restore session stats from history on page load */
+function restoreStats() {
+  const arr = loadHistory();
+  arr.forEach(e => {
+    S.total++;
+    e.score >= 35 ? S.scam++ : S.safe++;
+  });
+  $('cTotal').textContent = S.total;
+  $('cScam').textContent  = S.scam;
+  $('cSafe').textContent  = S.safe;
+}
 
 /* ── Tab switching ── */
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1103,7 +1356,8 @@ function runMessage() {
   if (/rs\.?\s*\d+|₹\s*\d+/i.test(text))            { score += 20; flags.push('Specific monetary amount mentioned'); }
   if (/http|www\.|\.com|\.in/.test(text))            { score += 15; flags.push('Contains a link or URL reference'); }
 
-  showResult(Math.min(score, 100), flags, 'message');
+  const final = Math.min(score, 100);
+  showResult(final, flags, 'message', text);
 }
 
 function runURL() {
@@ -1112,7 +1366,7 @@ function runURL() {
 
   const isSafe = SAFE_DOMAINS.some(d => url.toLowerCase().includes(d));
   if (isSafe && !url.startsWith('http://')) {
-    showResult(5, [], 'url');
+    showResult(5, [], 'url', url);
     return;
   }
 
@@ -1127,7 +1381,7 @@ function runURL() {
   if ((host.match(/\./g)||[]).length > 3) { score += 20; flags.push('Excessive subdomains — possible domain spoofing'); }
   if (/\d{3,}/.test(host))               { score += 15; flags.push('Numbers embedded in domain (common in fake sites)'); }
 
-  showResult(Math.min(score, 100), flags, 'url');
+  showResult(Math.min(score, 100), flags, 'url', url);
 }
 
 function runProfile() {
@@ -1158,19 +1412,29 @@ function runProfile() {
   }
 
   if (score === 0 && !desc) { alert('Please check at least one indicator or describe the profile.'); return; }
-  showResult(Math.min(Math.round(score), 100), flags, 'profile');
+  showResult(Math.min(Math.round(score), 100), flags, 'profile', desc);
 }
 
 /* ════════════════════════════════════════════
    RENDER RESULT
 ════════════════════════════════════════════ */
-function showResult(score, flags, type) {
+function showResult(score, flags, type, input = '') {
   /* stats */
   S.total++;
   score >= 35 ? S.scam++ : S.safe++;
   $('cTotal').textContent = S.total;
   $('cScam').textContent  = S.scam;
   $('cSafe').textContent  = S.safe;
+
+  /* save to history */
+  addToHistory({
+    id:    Date.now() + Math.random().toString(36).slice(2),
+    ts:    new Date().toISOString(),
+    type,
+    score,
+    input: input.slice(0, 200),
+    flags,
+  });
 
   const card  = $('resultCard');
   const wrap  = $('resultWrap');
@@ -1262,6 +1526,10 @@ function clearAll() {
   $('rMeter').style.width = '0%';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+/* ── Init on page load ── */
+restoreStats();
+renderHistory();
 </script>
 </body>
 </html>
